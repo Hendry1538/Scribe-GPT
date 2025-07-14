@@ -1,19 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Kindle GPT Chat</title>
   <meta charset="UTF-8">
+  <title>Kindle GPT Chat</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; }
-    #chat { white-space: pre-wrap; margin-bottom: 1em; }
-    textarea { width: 100%; height: 4em; margin-bottom: 10px; }
-    button { width: 100%; padding: 1em; }
+    body {
+      font-family: sans-serif;
+      padding: 1rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    #chat {
+      white-space: pre-wrap;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+      padding: 1em;
+      height: 300px;
+      overflow-y: auto;
+    }
+    textarea {
+      width: 100%;
+      height: 4em;
+      margin-bottom: 1em;
+    }
+    input[type="text"], input[type="password"] {
+      width: 49%;
+      padding: 0.5em;
+      margin-bottom: 1em;
+    }
+    button {
+      padding: 0.7em;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
-  <h2>Kindle GPT Chat</h2>
+  <h2>GPT Chat</h2>
+
+  <div>
+    <input id="username" type="text" placeholder="Username" required>
+    <input id="password" type="password" placeholder="Password" required>
+  </div>
+
   <div id="chat"></div>
-  <textarea id="userInput" placeholder="Type your message…"></textarea>
+
+  <textarea id="userInput" placeholder="Type your message..."></textarea>
   <button onclick="sendMessage()">Send</button>
 
   <script>
@@ -21,23 +52,34 @@
       const input = document.getElementById('userInput').value.trim();
       if (!input) return;
 
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (!username || !password) {
+        alert('Please enter your username and password.');
+        return;
+      }
+
       const chatDiv = document.getElementById('chat');
-      chatDiv.innerHTML += `\n\nYou: ${input}`;
+      chatDiv.innerHTML += `\n\n🧑 You: ${input}`;
       document.getElementById('userInput').value = '';
-      window.scrollTo(0, document.body.scrollHeight);
+      chatDiv.scrollTop = chatDiv.scrollHeight;
 
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': 'Basic ' + btoa(username + ':' + password),
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           messages: [{ role: 'user', content: input }],
           model: 'gpt-4'
         })
       });
+
       const data = await res.json();
       const reply = data.choices?.[0]?.message?.content || '[No reply]';
-      chatDiv.innerHTML += `\n\nGPT: ${reply}`;
-      window.scrollTo(0, document.body.scrollHeight);
+      chatDiv.innerHTML += `\n\n🤖 GPT: ${reply}`;
+      chatDiv.scrollTop = chatDiv.scrollHeight;
     }
   </script>
 </body>
