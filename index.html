@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kindle GPT Chat</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; padding: 10px; }
+    #chat { white-space: pre-wrap; margin-bottom: 1em; }
+    textarea { width: 100%; height: 4em; margin-bottom: 10px; }
+    button { width: 100%; padding: 1em; }
+  </style>
+</head>
+<body>
+  <h2>Kindle GPT Chat</h2>
+  <div id="chat"></div>
+  <textarea id="userInput" placeholder="Type your message…"></textarea>
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById('userInput').value.trim();
+      if (!input) return;
+
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML += `\n\nYou: ${input}`;
+      document.getElementById('userInput').value = '';
+      window.scrollTo(0, document.body.scrollHeight);
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: input }],
+          model: 'gpt-4'
+        })
+      });
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || '[No reply]';
+      chatDiv.innerHTML += `\n\nGPT: ${reply}`;
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+  </script>
+</body>
+</html>
